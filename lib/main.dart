@@ -27,6 +27,7 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin{
   final List<ChatMessage> _messages = <ChatMessage>[];
   final TextEditingController _textEditingController =
       new TextEditingController();
+  bool _isComposing = false;    
 
   @override
   void dispose(){
@@ -37,6 +38,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin{
 
   void _handleSubmitted(String text) {
     _textEditingController.clear();
+    setState(() {
+     _isComposing = false; 
+    });
     ChatMessage message = new ChatMessage(
       text: text,
       animationController: new AnimationController(vsync: this,
@@ -59,6 +63,11 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin{
             new Flexible(
                 child: new TextField(
               controller: _textEditingController,
+              onChanged: (String text){
+                setState(() {
+                 _isComposing =  text.length > 0;
+                });
+              },
               onSubmitted: _handleSubmitted,
               decoration: new InputDecoration.collapsed(
                 hintText: "Send a message",
@@ -68,7 +77,9 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin{
               margin: const EdgeInsets.symmetric(horizontal: 4.0),
               child: new IconButton(
                 icon: new Icon(Icons.send),
-                onPressed: () => _handleSubmitted(_textEditingController.text),
+                onPressed: _isComposing
+                ? () => _handleSubmitted(_textEditingController.text)
+                : null,
               ),
             ),
           ],
@@ -101,6 +112,8 @@ class _ChatScreenState extends State<ChatScreen> with TickerProviderStateMixin{
   }
 }
 
+
+
 //for message list
 class ChatMessage extends StatelessWidget {
   ChatMessage({this.text,this.animationController});
@@ -122,7 +135,8 @@ class ChatMessage extends StatelessWidget {
             margin: const EdgeInsets.only(right: 10.0),
             child: new CircleAvatar(child: new Text(_name[0])),
           ),
-          new Column(
+          new Expanded(
+          child: new Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               new Text(_name, style: Theme.of(context).textTheme.subhead),
@@ -131,6 +145,7 @@ class ChatMessage extends StatelessWidget {
                 child: new Text(text),
               ),
             ],
+          ),
           ),
         ],
       ),
